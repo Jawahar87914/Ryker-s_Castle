@@ -14,16 +14,22 @@ public class Player extends Entity{
 	GamePanel gp;
 	KeyHandler keyH;
 	
+	public final int screenX;
+	public final int screenY;
+	
 	public Player(GamePanel gp,KeyHandler keyH) {
 		this.gp=gp;
 		this.keyH=keyH;
+		
+		screenX=gp.screenWidth/2-(gp.tileSize/2);
+		screenY=gp.screenHeight/2-(gp.tileSize/2);
 		
 		setDefaultValue();
 		getPlayerImage();
 	}
 	public void setDefaultValue() {
-		x=100;
-		y=100;
+		worldX=gp.tileSize*12;
+		worldY=gp.tileSize*2;
 		speed=4;
 		direction="down";
 	}
@@ -31,14 +37,14 @@ public class Player extends Entity{
 		
 		try {
 			
-			up1=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
-			up2=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
-			down1=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
-			down2=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
-			left1=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
-			left2=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
-			right1=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
-			right2=ImageIO.read(getClass().getResourceAsStream("/player/tile_0085.png"));
+			up1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_04.png"));
+			up2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_05.png"));
+			down1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_01.png"));
+			down2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_02.png"));
+			left1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_07.png"));
+			left2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_08.png"));
+			right1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_10.png"));
+			right2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_11.png"));
 			
 		}catch(IOException e) {
 			e.printStackTrace();
@@ -52,19 +58,19 @@ public class Player extends Entity{
 
 		if(keyH.upPressed==true) {
 			direction="up";
-			y -= speed;
+			worldY -= speed;
 		}
 		else if(keyH.downPressed==true) {
 			direction="down";
-			y += speed;
+			worldY += speed;
 		}
 		else if(keyH.leftPressed==true) {
 			direction ="left";
-			x -=speed;
+			worldX -=speed;
 		}
 		else if(keyH.rightPressed==true) {
 			direction="right";
-			x +=speed;
+			worldX +=speed;
 		}
 		
 		spriteCounter++;
@@ -119,6 +125,6 @@ public class Player extends Entity{
 			}
 			break;	
 		}
-		g2.drawImage(image, x, y, gp.tileSize, gp.tileSize,null);
+		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize,null);
 	}
 }
