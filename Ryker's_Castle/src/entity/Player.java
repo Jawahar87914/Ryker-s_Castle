@@ -1,6 +1,7 @@
 package entity;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -16,6 +17,7 @@ public class Player extends Entity{
 	
 	public final int screenX;
 	public final int screenY;
+	int hasKey = 0;
 	
 	public Player(GamePanel gp,KeyHandler keyH) {
 		this.gp=gp;
@@ -23,6 +25,16 @@ public class Player extends Entity{
 		
 		screenX=gp.screenWidth/2-(gp.tileSize/2);
 		screenY=gp.screenHeight/2-(gp.tileSize/2);
+		
+		solidArea = new Rectangle();
+			solidArea.x = 8;
+			solidArea.y = 16;
+			
+			solidAreaDefaultX = solidArea.x;
+			solidAreaDefaultY = solidArea.y;
+			
+			solidArea.width = 32;
+			solidArea.height = 32;
 		
 		setDefaultValue();
 		getPlayerImage();
@@ -58,19 +70,30 @@ public class Player extends Entity{
 
 		if(keyH.upPressed==true) {
 			direction="up";
-			worldY -= speed;
 		}
 		else if(keyH.downPressed==true) {
 			direction="down";
-			worldY += speed;
 		}
 		else if(keyH.leftPressed==true) {
 			direction ="left";
-			worldX -=speed;
 		}
 		else if(keyH.rightPressed==true) {
 			direction="right";
-			worldX +=speed;
+		}
+		
+		collisionOn=false;
+		gp.cChecker.checkTile(this);
+		
+		int objIndex = gp.cChecker.checkObject(this, true);
+		pickUpObject(objIndex);
+		
+		if(collisionOn==false) {
+			switch(direction) {
+			case "up": worldY -= speed; break;
+			case "down": worldY += speed; break;
+			case "left": worldX -=speed; break;
+			case "right": worldX +=speed; break;
+			}
 		}
 		
 		spriteCounter++;
@@ -85,6 +108,35 @@ public class Player extends Entity{
 		}
 	}
 }
+	public void pickUpObject(int i) {
+		
+		if(i !=999) {
+			
+			String objectName = gp.obj[i].name;
+			
+			switch(objectName) {
+			case "Rkey":
+				hasKey++;
+				gp.obj[i] = null;
+				System.out.println("Key:"+hasKey);
+				break;
+			case "door":
+				if(hasKey > 0) {
+					gp.obj[i] = null;
+					hasKey--;
+				}
+				System.out.println("Key:"+hasKey);
+				break;
+			case "sPotion":
+				speed +=1;
+				gp.obj[i] = null;
+				break;
+			}
+			
+		}
+		
+	}
+	
 	public void draw(Graphics2D g2) {
 	
 		BufferedImage image =null;
