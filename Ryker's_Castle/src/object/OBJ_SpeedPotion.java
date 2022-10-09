@@ -1,19 +1,17 @@
 package object;
 
-import java.io.IOException;
+import entity.Entity;
+import main.GamePanel;
 
-import javax.imageio.ImageIO;
-
-public class OBJ_SpeedPotion extends SuperObject{
+public class OBJ_SpeedPotion extends Entity{
 	
-public OBJ_SpeedPotion() {
+	
+public OBJ_SpeedPotion(GamePanel gp) {
+	
+	super(gp);
 		
 		name = "sPotion";
-		try {
-			image =ImageIO.read(getClass().getResourceAsStream("/objects/speed_potion.png"));
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
+		down1 = setup("/objects/speed_potion");
 	}
 
 

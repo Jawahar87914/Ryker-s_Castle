@@ -1,5 +1,6 @@
 package entity;
 
+import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -9,18 +10,18 @@ import javax.imageio.ImageIO;
 
 import main.GamePanel;
 import main.KeyHandler;
+import main.UtilityTool;
 
 public class Player extends Entity{
 	
-	GamePanel gp;
 	KeyHandler keyH;
 	
 	public final int screenX;
 	public final int screenY;
-	int hasKey = 0;
 	
 	public Player(GamePanel gp,KeyHandler keyH) {
-		this.gp=gp;
+		
+		super(gp);
 		this.keyH=keyH;
 		
 		screenX=gp.screenWidth/2-(gp.tileSize/2);
@@ -44,25 +45,26 @@ public class Player extends Entity{
 		worldY=gp.tileSize*2;
 		speed=4;
 		direction="down";
+		
+		maxLife = 6;
+		life = maxLife;
 	}
 	public void getPlayerImage() {
 		
-		try {
-			
-			up1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_04.png"));
-			up2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_05.png"));
-			down1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_01.png"));
-			down2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_02.png"));
-			left1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_07.png"));
-			left2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_08.png"));
-			right1=ImageIO.read(getClass().getResourceAsStream("/player/sprite_10.png"));
-			right2=ImageIO.read(getClass().getResourceAsStream("/player/sprite_11.png"));
-			
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
+	idle = setup("/player/tile_0085");	
+	up1 = setup("/player/sprite_04");
+	up2 = setup("/player/sprite_05");
+	down1 = setup("/player/sprite_01");
+	down2 = setup("/player/sprite_02");
+	left1 = setup("/player/sprite_07");
+	left2 = setup("/player/sprite_08");
+	right1 = setup("/player/sprite_10");
+	right2 = setup("/player/sprite_11");
+	
 			
 	}
+	
+	
 	public void update(){
 		
 		if(keyH.upPressed==true||keyH.downPressed==true
@@ -87,6 +89,18 @@ public class Player extends Entity{
 		int objIndex = gp.cChecker.checkObject(this, true);
 		pickUpObject(objIndex);
 		
+		//check npc collision
+		int npcIndex = gp.cChecker.checkEntity(this, gp.npc);
+		interactNPC(npcIndex);
+		
+		//check monster collision
+		int monsterIndex = gp.cChecker.checkEntity(this, gp.monster);
+		contactMonster(monsterIndex);
+		
+		//check Event
+		gp.eHandler.checkEvent();
+		gp.keyH.enterPressed = false;
+		
 		if(collisionOn==false) {
 			switch(direction) {
 			case "up": worldY -= speed; break;
@@ -107,36 +121,43 @@ public class Player extends Entity{
 			spriteCounter=0;
 		}
 	}
+		if(invincible == true) {
+			invincibleCounter++;
+			if(invincibleCounter > 60) {
+				invincible =false;
+				invincibleCounter = 0;
+			}
+		}
+		
 }
 	public void pickUpObject(int i) {
 		
 		if(i !=999) {
 			
-			String objectName = gp.obj[i].name;
-			
-			switch(objectName) {
-			case "Rkey":
-				hasKey++;
-				gp.obj[i] = null;
-				System.out.println("Key:"+hasKey);
-				break;
-			case "door":
-				if(hasKey > 0) {
-					gp.obj[i] = null;
-					hasKey--;
-				}
-				System.out.println("Key:"+hasKey);
-				break;
-			case "sPotion":
-				speed +=1;
-				gp.obj[i] = null;
-				break;
-			}
 			
 		}
 		
 	}
-	
+	public void interactNPC(int i) {
+		
+		if(i !=999) {
+			
+			if(gp.keyH.enterPressed == true) {
+				
+				gp.gameState = gp.dialougeState;
+				gp.npc[i].speak();
+				
+			}
+		}
+	}
+	public void contactMonster(int i) {
+		if(i != 999) {
+			if(invincible == false) {
+				life -= 1;
+				invincible = true;
+			}
+		}
+	}
 	public void draw(Graphics2D g2) {
 	
 		BufferedImage image =null;
@@ -177,6 +198,12 @@ public class Player extends Entity{
 			}
 			break;	
 		}
-		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize,null);
+		if(invincible == true) {
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+		}
+		g2.drawImage(image, screenX, screenY, null);
+		
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+
 	}
 }
